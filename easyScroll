@@ -1,0 +1,114 @@
+/**
+ * Created by Coral.Qing on 2017/3/31.
+ * @mail imqing@vip.qq.com
+ */
+
+var _id = 1;
+
+function easyScroll(elem, settings){
+    settings = settings || {};
+    var classEasyScroll = 'jEasyScroll';
+
+    var children = elem.children().not('.' + classEasyScroll);
+    if(children.length){
+
+        var originalHeight = elem.innerHeight(), innerHeight = originalHeight;
+        var paddingTop = parseInt(elem.css('paddingTop')),
+            paddingBottom = parseInt(elem.css('paddingBottom'));
+
+        innerHeight = originalHeight - paddingTop - paddingBottom;
+
+        var childHeight = children.innerHeight();
+
+        if(childHeight > innerHeight){
+            var $pane = $('<div>'), offset = elem.offset();
+            var paneHeight = parseInt(innerHeight / childHeight * innerHeight),
+                diffHeight = childHeight - innerHeight,
+                startTop = 0,
+                endTop = originalHeight - paneHeight,
+                heightPerPx = diffHeight / endTop;
+
+            $pane.addClass(classEasyScroll + ' ' + (settings.className || '')).css({
+                position: 'absolute',
+                top: startTop,
+                right: 0,
+                width: settings.width || 6,
+                height: paneHeight,
+                zIndex: 10
+            });
+
+            var keyDown = false, startY, curTop = startTop, dHeight = 0;
+
+            var $document = $(document);
+
+            elem.off('.' + classEasyScroll);
+
+            elem.on('mousedown.' + classEasyScroll, '.' + classEasyScroll, function(e){
+                keyDown = true;
+                startY = e.pageY;
+                dHeight = startY - offset.top - curTop;
+                e.preventDefault();
+            });
+
+            var easyId = elem.data('_easyId'),
+                easyName;
+
+            if(!easyId){
+                easyId = _id++;
+                elem.data('_easyId', easyId);
+            }
+            easyName = 'easy' + easyId;
+            $document.off('.' + easyName);
+
+            elem.on('wheel.' + classEasyScroll, function(e){
+                var deltaY = e.originalEvent.deltaY, dt;
+                if(deltaY > 0){
+                    //down
+                    dt = 1;
+                }else{
+                    //up
+                    dt = -1;
+                }
+                setTop(curTop + dt * 10);
+            });
+
+            function setTop(distTop){
+                if(distTop >= endTop){
+                    distTop = endTop;
+                }
+                if(distTop <= 0){
+                    distTop = 0;
+                }
+
+                curTop = distTop;
+                $pane.css('top', distTop);
+                children.css('marginTop', -heightPerPx * distTop);
+            }
+
+            $document.on('mousemove.' + easyName, function(e){
+                if(keyDown){
+                    var y = e.pageY;
+                    var distTop = y - offset.top - dHeight;
+
+                    setTop(distTop);
+                }
+            }).on('mouseup.' + easyName, function(e){
+                keyDown = false;
+            });
+
+            elem.children('.jEasyScroll').remove();
+
+            var position = elem.css('position') == 'absolute' ? 'absolute' : 'relative';
+            elem.css({
+                overflow: 'hidden',
+                position: position
+            }).append($pane);
+
+            if(settings.goToBottom){
+                setTop(endTop);
+            }
+        }
+    }
+}
+
+module.exports = easyScroll;
