@@ -1,12 +1,12 @@
 # easyScroll
-简易滚动条
+简易滚动条，可以添加class和滚动到最下方，
 
+# usage
 
-#usage
-easyScroll($elem, settings);
+ easyScroll($elem, settings);
 
-#settings
+# settings
+  
+# @param: className;
 
-@param: className;
-
-@param: goToBottom;  滚动到最下方
+# @param: goToBottom;  滚动到最下方
